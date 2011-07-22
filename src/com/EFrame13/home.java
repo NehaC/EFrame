@@ -17,6 +17,8 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.view.Display;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -260,6 +262,23 @@ public class home extends Activity {
     	
     	
     }
+    
+    public boolean onCreateOptionsMenu(android.view.Menu menu) {
+    	MenuInflater inflater = getMenuInflater();
+    	inflater.inflate(R.menu.menu, menu);
+    	return true;
+    	}
+    
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+    	switch (item.getItemId())
+    	{
+    		case R.id.aboutUs:Intent i = new Intent(this, AboutUs.class);
+    		startActivity(i);
+    		break;
+    	}
+    	return true;
+    } 
     
     /*
 	Type: function

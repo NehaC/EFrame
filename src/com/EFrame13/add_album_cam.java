@@ -16,7 +16,7 @@ public class add_album_cam extends Activity{
 	private EditText album_name = null;
 	private Button add_new_album=null;
 	DBAdapter db = new DBAdapter(this);
-	//Session ss = new Session();
+	//Session ss = new Session();  
 	Dialog dialog2;
 	
 	/** Called when the activity is first created. */

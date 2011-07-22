@@ -25,7 +25,7 @@ public class FullPhotoTagEdit extends Activity{
 	String selectedPhoto, selectedAlbumName;
 	
 	int pid;
-	String size = "";
+	/*String size = "";
 	String country = "";
 	String state = "";
 	String city = "";
@@ -33,7 +33,7 @@ public class FullPhotoTagEdit extends Activity{
 	String area = "";
 	String tag = "";
 	String date_time = "";
-	String frame = "";
+	String frame = "";*/
 	int flag_exist;
 	EditText clicked_on=null;
 	EditText e_country=null;

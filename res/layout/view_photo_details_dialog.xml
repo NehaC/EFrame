@@ -14,7 +14,7 @@
       	android:layout_height="wrap_content"
       	android:gravity="center_vertical|center_horizontal"
       	>
-  
+    
 		
 		<TextView
   		android:id="@+id/text1"
@@ -31,13 +31,11 @@
   	 	android:orientation="horizontal"
   		android:layout_width="fill_parent"
       	android:layout_height="wrap_content"
-      	android:gravity="center_vertical|center_horizontal"
       	>
       
        <TextView 
        		android:id="@+id/viewDetailsDialog"
-       		android:paddingLeft="50px"
-       		android:gravity="center_vertical|center_horizontal"
+       		android:paddingLeft="10px"
        		android:layout_width="wrap_content" 
        		android:layout_height="wrap_content" />
       </LinearLayout>
@@ -57,7 +55,7 @@
        		android:layout_height="wrap_content"
        		android:layout_centerHorizontal="true" 
        		android:text="OK" />
-	<Button
+	<!--<Button
           android:id="@+id/cancel"
        	  android:layout_width="wrap_content"
           android:layout_height="wrap_content"
@@ -65,5 +63,5 @@
           android:paddingRight="20px"
           android:text="Cancel" 
           />
-       	</LinearLayout>	
+       	--></LinearLayout>	
       </RelativeLayout>

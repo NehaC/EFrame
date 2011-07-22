@@ -1,5 +1,10 @@
 package com.EFrame13;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
@@ -39,10 +44,14 @@ public class FullPhotoTag extends Activity{
         setContentView(R.layout.full_photo_add_tag);
 		ImageView fullPhoto = (ImageView)findViewById(R.id.image_view);
 		
-		options = new BitmapFactory.Options();
-		options.inSampleSize = 1;
-		Bitmap bm = BitmapFactory.decodeFile(selectedPhoto, options);
-		fullPhoto.setImageBitmap(bm);
+		Bitmap bm;
+		try {
+			bm = decodeFile(new File(selectedPhoto));
+			fullPhoto.setImageBitmap(bm);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		
 	
 		Button back = (Button)findViewById(R.id.back);
@@ -119,7 +128,6 @@ finish();
 						c.close();
 					
 					viewDetailsDialog.setText("\nImage: "+selectedPhoto+
-							"\nSize: "+size+
 							"\nDate: "+date_time+
 							"\nPlace: "+place+
 							"\nArea: "+area+
@@ -159,7 +167,35 @@ finish();
         
     }
     
-    
+    private Bitmap decodeFile(File f) throws IOException{
+        Bitmap b = null;
+        try {
+        	
+        	int IMAGE_MAX_SIZE = 250;
+        	
+            //Decode image size
+            BitmapFactory.Options o = new BitmapFactory.Options();
+            o.inJustDecodeBounds = true;
+
+            FileInputStream fis = new FileInputStream(f);
+            BitmapFactory.decodeStream(fis, null, o);
+            fis.close();
+
+            int scale = 1;
+            if (o.outHeight > IMAGE_MAX_SIZE || o.outWidth > IMAGE_MAX_SIZE) {
+                scale = (int) Math.pow(2, (int) Math.round(Math.log(IMAGE_MAX_SIZE / (double) Math.max(o.outHeight, o.outWidth)) / Math.log(0.5)));
+            }
+
+            //Decode with inSampleSize
+            BitmapFactory.Options o2 = new BitmapFactory.Options();
+            o2.inSampleSize = scale;
+            fis = new FileInputStream(f);
+            b = BitmapFactory.decodeStream(fis, null, o2);
+            fis.close();
+        } catch (FileNotFoundException e) {
+        }
+        return b;
+    }
 	
 }
 

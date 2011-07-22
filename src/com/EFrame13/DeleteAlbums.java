@@ -1,5 +1,10 @@
 package com.EFrame13;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -18,6 +23,7 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.Toast;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 
 public class DeleteAlbums extends Activity{
@@ -122,6 +128,36 @@ public class DeleteAlbums extends Activity{
      displayPhotos();
  }
  
+	    private Bitmap decodeFile(File f) throws IOException{
+	        Bitmap b = null;
+	        try {
+	        	
+	        	int IMAGE_MAX_SIZE = 70;
+	        	
+	            //Decode image size
+	            BitmapFactory.Options o = new BitmapFactory.Options();
+	            o.inJustDecodeBounds = true;
+
+	            FileInputStream fis = new FileInputStream(f);
+	            BitmapFactory.decodeStream(fis, null, o);
+	            fis.close();
+
+	            int scale = 1;
+	            if (o.outHeight > IMAGE_MAX_SIZE || o.outWidth > IMAGE_MAX_SIZE) {
+	                scale = (int) Math.pow(2, (int) Math.round(Math.log(IMAGE_MAX_SIZE / (double) Math.max(o.outHeight, o.outWidth)) / Math.log(0.5)));
+	            }
+
+	            //Decode with inSampleSize
+	            BitmapFactory.Options o2 = new BitmapFactory.Options();
+	            o2.inSampleSize = scale;
+	            fis = new FileInputStream(f);
+	            b = BitmapFactory.decodeStream(fis, null, o2);
+	            fis.close();
+	        } catch (FileNotFoundException e) {
+	        }
+	        return b;
+	    }
+	    
  void displayPhotos()
  {
  	GridView sdcardImages = (GridView) findViewById(R.id.sdcard);
@@ -153,21 +189,26 @@ public class DeleteAlbums extends Activity{
          
              LayoutInflater li = getLayoutInflater();
              v = li.inflate(R.layout.delete_albums_row, null);
-              
+              try
+              {
              // Binding album covers with album names to display...
-             
+             ImageView iv = (ImageView)v.findViewById(R.id.icon_image1);
              if(!(album_covers[position].equals("")))
              {
-            	 ImageView iv = (ImageView)v.findViewById(R.id.icon_image1);
-            	 Bitmap bMap = BitmapFactory.decodeFile(album_covers[position]);
-            	 if(bMap!=null)		                
+            	// ImageView iv = (ImageView)v.findViewById(R.id.icon_image1);
+            	 Bitmap bMap = decodeFile(new File(album_covers[position]));
+            	 if(bMap!=null)		       
+            	 {
+            		 //Bitmap newImage = Bitmap.createScaledBitmap(bMap, 80, 80, true);
+                    // iv.setImageBitmap(newImage);
             		 iv.setImageBitmap(bMap);
+            	 }
             	 else
             		 iv.setImageResource(R.drawable.moved_photo);
              }
              else
              {
-             	ImageView iv = (ImageView)v.findViewById(R.id.icon_image1);
+             	
 	                iv.setImageResource(R.drawable.default_a);
              }
              
@@ -208,7 +249,14 @@ public class DeleteAlbums extends Activity{
                  }
              });
              
-       
+              }
+          	catch(Exception e)
+          	{
+          		Toast toast = Toast.makeText(DeleteAlbums.this, 
+                  		"\nProblem in attaching photos....\nImage: "+position,
+                  		Toast.LENGTH_LONG);
+                  toast.show();
+          	}
          return v;
          
      }

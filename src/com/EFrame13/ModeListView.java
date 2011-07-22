@@ -1,6 +1,11 @@
 package com.EFrame13;
 
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 import android.app.Activity;
 import android.os.Bundle;
 import android.widget.AdapterView;
@@ -226,6 +231,36 @@ finish();
       
         }
         
+    private Bitmap decodeFile(File f) throws IOException{
+        Bitmap b = null;
+        try {
+        	
+        	int IMAGE_MAX_SIZE = 70;
+        	
+            //Decode image size
+            BitmapFactory.Options o = new BitmapFactory.Options();
+            o.inJustDecodeBounds = true;
+
+            FileInputStream fis = new FileInputStream(f);
+            BitmapFactory.decodeStream(fis, null, o);
+            fis.close();
+
+            int scale = 1;
+            if (o.outHeight > IMAGE_MAX_SIZE || o.outWidth > IMAGE_MAX_SIZE) {
+                scale = (int) Math.pow(2, (int) Math.round(Math.log(IMAGE_MAX_SIZE / (double) Math.max(o.outHeight, o.outWidth)) / Math.log(0.5)));
+            }
+
+            //Decode with inSampleSize
+            BitmapFactory.Options o2 = new BitmapFactory.Options();
+            o2.inSampleSize = scale;
+            fis = new FileInputStream(f);
+            b = BitmapFactory.decodeStream(fis, null, o2);
+            fis.close();
+        } catch (FileNotFoundException e) {
+        }
+        return b;
+    }
+    
         public class ImageAdapter extends BaseAdapter{
         	private Context mContext;
         	
@@ -250,19 +285,28 @@ finish();
 		           
 		                LayoutInflater li = getLayoutInflater();
 		                v = li.inflate(R.layout.view_album_row, null);
+		                try
+		                {
+		                
 		                TextView tv = (TextView)v.findViewById(R.id.icon_text);
 		                tv.setText(album_names[position]);
 		                ImageView iv = (ImageView)v.findViewById(R.id.icon_image);
 		               try
 		               {
-		                
+		                    
 		                if(!(album_covers[position].equals("")))
 		                {
-		                	Bitmap bMap = BitmapFactory.decodeFile(album_covers[position]);
-		                	if(bMap!=null)		                
-		                		iv.setImageBitmap(bMap);
-		                	else
-		                		iv.setImageResource(R.drawable.moved_photo);
+		                	Bitmap bMap = decodeFile(new File(album_covers[position]));
+		                	if(bMap!=null)	     
+		                    {
+		                    	//Bitmap newImage = Bitmap.createScaledBitmap(bMap, 80, 80, true);
+		                        iv.setImageBitmap(bMap);
+		                    }
+		                    else
+		                    {
+		                    	iv.setImageResource(R.drawable.icon);
+		                    }
+
 		                }
 		                else
 		                {
@@ -270,13 +314,13 @@ finish();
 		                }
 		               }
 		               catch(Exception e)
-		           		{
+		           	{
 		           		Runtime rt = Runtime.getRuntime();
 		           		Toast toast = Toast.makeText(ModeListView.this, 
 		                   		"\nProblem inattaching images..\nFree memo: "+rt.freeMemory(),
 		                   		Toast.LENGTH_LONG);
-		                toast.show();
-		           		}
+		                   toast.show();
+		           	}
 		                iv.setOnClickListener(new Button.OnClickListener() 
 		        		{ public void onClick (View v)
 		        			{ 
@@ -331,6 +375,14 @@ finish();
 		        			}
 		        			}
 		        		});
+		                }
+		            	catch(Exception e)
+		            	{
+		            		Toast toast = Toast.makeText(ModeListView.this, 
+		                    		"\nProblem in attaching photos....\nImage: "+position,
+		                    		Toast.LENGTH_LONG);
+		                    toast.show();
+		            	}
 		            return v;
 
             }

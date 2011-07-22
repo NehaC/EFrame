@@ -54,13 +54,13 @@ public class Settings extends Activity{
 				
 		OnClickListener radio_listener = new OnClickListener() {
              public void onClick(View v) {
-                 
+            	 dialog.dismiss();
                  RadioButton rb = (RadioButton) v;
                                  
                  if((rb.getText()).equals("Enter Elite PictureFrame ID"))
                  {
                 	 
-                	 
+                	
                 	final Dialog dialog1 = new Dialog(Settings.this);
          			dialog1.setContentView(R.layout.add_epfid_dialog);
          			dialog1.setCancelable(true);
@@ -76,7 +76,7 @@ public class Settings extends Activity{
 					{
                 		epfid1 = mCursor.getString(1);
 					}
-                	if(mCursor!=null)
+                	//if(mCursor!=null)
                 	mCursor.close();
                 	
                 	epfid.setText(epfid1);

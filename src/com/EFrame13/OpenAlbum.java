@@ -1,5 +1,10 @@
 package com.EFrame13;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
@@ -17,6 +22,7 @@ import android.widget.Button;
 import android.widget.Gallery;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
 public class OpenAlbum extends Activity{
@@ -215,6 +221,37 @@ finish();
            }
        });
     }
+    
+    private Bitmap decodeFile(File f) throws IOException{
+        Bitmap b = null;
+        try {
+        	
+        	int IMAGE_MAX_SIZE = 200;
+        	
+            //Decode image size
+            BitmapFactory.Options o = new BitmapFactory.Options();
+            o.inJustDecodeBounds = true;
+
+            FileInputStream fis = new FileInputStream(f);
+            BitmapFactory.decodeStream(fis, null, o);
+            fis.close();
+
+            int scale = 1;
+            if (o.outHeight > IMAGE_MAX_SIZE || o.outWidth > IMAGE_MAX_SIZE) {
+                scale = (int) Math.pow(2, (int) Math.round(Math.log(IMAGE_MAX_SIZE / (double) Math.max(o.outHeight, o.outWidth)) / Math.log(0.5)));
+            }
+
+            //Decode with inSampleSize
+            BitmapFactory.Options o2 = new BitmapFactory.Options();
+            o2.inSampleSize = scale;
+            fis = new FileInputStream(f);
+            b = BitmapFactory.decodeStream(fis, null, o2);
+            fis.close();
+        } catch (FileNotFoundException e) {
+        }
+        return b;
+    }
+    
     public class AddImgAdp extends BaseAdapter {
         int GalItemBg;
         private Context cont;
@@ -237,20 +274,29 @@ finish();
         public long getItemId(int position) {
             return position;
         }
-
+    
         public View getView(int position, View convertView, ViewGroup parent) {
             ImageView imgView = new ImageView(cont);
-
-            Bitmap bMap = BitmapFactory.decodeFile(photosInSelectedAlbum[position]);
+            try
+            {
+            Bitmap bMap = decodeFile(new File(photosInSelectedAlbum[position]));
             if(bMap!=null)		
               	imgView.setImageBitmap(bMap);
             else
                	imgView.setImageResource(R.drawable.moved_photo);
             
-            imgView.setLayoutParams(new Gallery.LayoutParams(220, 290));
+            imgView.setLayoutParams(new Gallery.LayoutParams(350, 500));
             imgView.setScaleType(ImageView.ScaleType.FIT_XY);
             imgView.setBackgroundResource(GalItemBg);
-
+            
+        }
+    	catch(Exception e)
+    	{
+    		Toast toast = Toast.makeText(OpenAlbum.this, 
+            		"\nProblem in attaching photos....",
+            		Toast.LENGTH_LONG);
+            toast.show();
+    	}
             return imgView;
         }
     }

@@ -1,5 +1,8 @@
 package com.EFrame13;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import android.app.Activity;
 import android.app.Dialog;
@@ -47,33 +50,40 @@ public class FullPhoto extends Activity{
         setAsWallpaper = (Button)findViewById(R.id.setAsWallpaper);
 		ImageView fullPhoto = (ImageView)findViewById(R.id.image_view);
 		
-		options = new BitmapFactory.Options();
-		options.inSampleSize = 1;
-		Bitmap bm = BitmapFactory.decodeFile(selectedPhoto, options);
-		fullPhoto.setImageBitmap(bm);
-		fullPhoto.setOnClickListener(new Button.OnClickListener() 
-		{ public void onClick (View v)
-			{
-				if(flag==0)
+		//options = new BitmapFactory.Options();
+		//options.inSampleSize = 1;
+		Bitmap bm;
+		try {
+			bm = decodeFile(new File(selectedPhoto));
+			fullPhoto.setImageBitmap(bm);
+			fullPhoto.setOnClickListener(new Button.OnClickListener() 
+			{ public void onClick (View v)
 				{
-					flag=1;
-					back.setVisibility(View.VISIBLE);
-					mailToFriend.setVisibility(View.VISIBLE);
-					viewDetails.setVisibility(View.VISIBLE);
-					editDetails.setVisibility(View.VISIBLE);
-					setAsWallpaper.setVisibility(View.VISIBLE);
+					if(flag==0)
+					{
+						flag=1;
+						back.setVisibility(View.VISIBLE);
+						mailToFriend.setVisibility(View.VISIBLE);
+						viewDetails.setVisibility(View.VISIBLE);
+						editDetails.setVisibility(View.VISIBLE);
+						setAsWallpaper.setVisibility(View.VISIBLE);
+					}
+					else if(flag==1)
+					{
+						flag=0;
+						back.setVisibility(View.GONE);
+						mailToFriend.setVisibility(View.GONE);
+						viewDetails.setVisibility(View.GONE);
+						editDetails.setVisibility(View.GONE);
+						setAsWallpaper.setVisibility(View.GONE);
+					}
 				}
-				else if(flag==1)
-				{
-					flag=0;
-					back.setVisibility(View.GONE);
-					mailToFriend.setVisibility(View.GONE);
-					viewDetails.setVisibility(View.GONE);
-					editDetails.setVisibility(View.GONE);
-					setAsWallpaper.setVisibility(View.GONE);
-				}
-			}
-		});
+			});
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
 		
 	
 		
@@ -112,10 +122,19 @@ finish();
         setAsWallpaper.setOnClickListener(new Button.OnClickListener() 
 		{ public void onClick (View v)
 			{
-				Bitmap bitmap = BitmapFactory.decodeFile(selectedPhoto);
+				Bitmap bitmap = null;
+				try {
+					bitmap = decodeFile(new File(selectedPhoto));
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 
 			        try {
-			        getApplicationContext().setWallpaper(bitmap);
+			        	if(bitmap!=null)
+			        	{
+			        		getApplicationContext().setWallpaper(bitmap);
+			        	}
 			        } catch (IOException e) {
 			        e.printStackTrace();
 			        }
@@ -177,7 +196,6 @@ finish();
 					c.close();
 					
 					viewDetailsDialog.setText("\nImage: "+selectedPhoto+
-							"\nSize: "+size+
 							"\nDate: "+date_time+
 							"\nPlace: "+place+
 							"\nArea: "+area+
@@ -188,13 +206,13 @@ finish();
 				
 				}
 				
-				Button cancel = (Button) dialog.findViewById(R.id.cancel);
+				/*Button cancel = (Button) dialog.findViewById(R.id.cancel);
 				cancel.setOnClickListener(new OnClickListener() {
 
                 public void onClick(View v) {
                         dialog.dismiss();
                     }
-                });
+                });*/
 				
 				 Button ok = (Button) dialog.findViewById(R.id.ok);
 				 ok.setOnClickListener(new OnClickListener() {
@@ -225,6 +243,35 @@ finish();
         
     }
     
-    
+    private Bitmap decodeFile(File f) throws IOException{
+        Bitmap b = null;
+        try {
+        	
+        	int IMAGE_MAX_SIZE = 300;
+        	
+            //Decode image size
+            BitmapFactory.Options o = new BitmapFactory.Options();
+            o.inJustDecodeBounds = true;
+
+            FileInputStream fis = new FileInputStream(f);
+            BitmapFactory.decodeStream(fis, null, o);
+            fis.close();
+
+            int scale = 1;
+            if (o.outHeight > IMAGE_MAX_SIZE || o.outWidth > IMAGE_MAX_SIZE) {
+                scale = (int) Math.pow(2, (int) Math.round(Math.log(IMAGE_MAX_SIZE / (double) Math.max(o.outHeight, o.outWidth)) / Math.log(0.5)));
+            }
+
+            //Decode with inSampleSize
+            BitmapFactory.Options o2 = new BitmapFactory.Options();
+            o2.inSampleSize = scale;
+            fis = new FileInputStream(f);
+            b = BitmapFactory.decodeStream(fis, null, o2);
+            fis.close();
+        } catch (FileNotFoundException e) {
+        }
+        return b;
+    }
+
 	
 }

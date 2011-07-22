@@ -1,5 +1,9 @@
 package com.EFrame13;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import android.app.Activity;
@@ -126,6 +130,37 @@ public class addPhotosOpenAlbum extends Activity{
         all_photos();
     }
 
+    private Bitmap decodeFile(File f) throws IOException{
+        Bitmap b = null;
+        try {
+        	
+        	int IMAGE_MAX_SIZE = 70;
+        	
+            //Decode image size
+            BitmapFactory.Options o = new BitmapFactory.Options();
+            o.inJustDecodeBounds = true;
+
+            FileInputStream fis = new FileInputStream(f);
+            BitmapFactory.decodeStream(fis, null, o);
+            fis.close();
+
+            int scale = 1;
+            if (o.outHeight > IMAGE_MAX_SIZE || o.outWidth > IMAGE_MAX_SIZE) {
+                scale = (int) Math.pow(2, (int) Math.round(Math.log(IMAGE_MAX_SIZE / (double) Math.max(o.outHeight, o.outWidth)) / Math.log(0.5)));
+            }
+
+            //Decode with inSampleSize
+            BitmapFactory.Options o2 = new BitmapFactory.Options();
+            o2.inSampleSize = scale;
+            fis = new FileInputStream(f);
+            b = BitmapFactory.decodeStream(fis, null, o2);
+            fis.close();
+        } catch (FileNotFoundException e) {
+        }
+        return b;
+    }
+
+    
     /*
 	Type: function
 	Name: ConvertStringToArray
@@ -230,10 +265,10 @@ public class addPhotosOpenAlbum extends Activity{
     	{
     		
     		String str5 = PhotoList.get(i);
-    		
+    		String str5Lower = str5.toLowerCase();
     		for(int j=0; j<str.length; j++)
     		{
-    			if(str5.contains(str[j]))
+    			if(str5Lower.contains(str[j].toLowerCase()))
     				PhotoList1.add(str5);
        		}
     	}    	
@@ -385,21 +420,22 @@ public class addPhotosOpenAlbum extends Activity{
             
                 LayoutInflater li = getLayoutInflater();
                 v = li.inflate(R.layout.add_photos_open_album_row, null);
-                  
+                  try
+                  {
                 final String image;
                 
                 // Take Photo one by one from ArrayList and attach...
                 if(search_flag == 1)
                 	image = PhotoList1.get(position);
                 else
-                	image = PhotoList.get(position);
+                	image = PhotoList.get(position);  
                 
                 ImageView iv = (ImageView)v.findViewById(R.id.icon_image1);
-                Bitmap bMap = BitmapFactory.decodeFile(image);
+                Bitmap bMap = decodeFile(new File(image));
                 if(bMap!=null)	     
                 {
-                	Bitmap newImage = Bitmap.createScaledBitmap(bMap, 80, 80, true);
-                    iv.setImageBitmap(newImage);
+                	//Bitmap newImage = Bitmap.createScaledBitmap(bMap, 80, 80, true);
+                    iv.setImageBitmap(bMap);
                 }
                 else
                 {
@@ -539,7 +575,14 @@ public class addPhotosOpenAlbum extends Activity{
                         }
                     }
                 });
-                
+        }
+    	catch(Exception e)
+    	{
+    		Toast toast = Toast.makeText(addPhotosOpenAlbum.this, 
+            		"\nProblem in attaching photos....\nImage: "+position,
+            		Toast.LENGTH_LONG);
+            toast.show();
+    	}
           
             return v;
             

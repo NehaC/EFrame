@@ -1,5 +1,8 @@
 package com.EFrame13;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import android.app.Activity;
 import android.app.Dialog;
@@ -39,6 +42,7 @@ public class SlideShow extends Activity{
 	Button mailToFriend=null;
 	int flag1 =0;
 	Bitmap bm;
+	int noOfPhotos;
 	
 	/** Called when the activity is first created. */
     @Override
@@ -75,6 +79,8 @@ public class SlideShow extends Activity{
         viewDetails = (Button)findViewById(R.id.viewDetails);
         setAsWallpaper = (Button)findViewById(R.id.setAsWallpaper);
           	
+        noOfPhotos = db.getnoOfPhotos(selectedAlbumName);
+        
         startSlideShow();
         
         jpgView.setOnClickListener(new Button.OnClickListener() 
@@ -118,9 +124,10 @@ public class SlideShow extends Activity{
         setAsWallpaper.setOnClickListener(new Button.OnClickListener() 
 		{ public void onClick (View v)
 			{
-				bm = BitmapFactory.decodeFile(photosInSelectedAlbum[i]);
+				//bm = BitmapFactory.decodeFile(photosInSelectedAlbum[i-1]);
 
 			        try {
+			        	bm =	decodeFile(new File(photosInSelectedAlbum[i-1]));
 			        getApplicationContext().setWallpaper(bm);
 			        } catch (IOException e) {
 			        e.printStackTrace();
@@ -188,7 +195,6 @@ public class SlideShow extends Activity{
 					c.close();
 					
 					viewDetailsDialog.setText("\nImage: "+photo+
-							"\nSize: "+size+
 							"\nDate: "+date_time+
 							"\nPlace: "+place+
 							"\nArea: "+area+
@@ -211,6 +217,36 @@ public class SlideShow extends Activity{
 		
 		
 	
+    }
+    
+    private Bitmap decodeFile(File f) throws IOException{
+        Bitmap b = null;
+        try {
+        	
+        	int IMAGE_MAX_SIZE = 250;
+        	
+            //Decode image size
+            BitmapFactory.Options o = new BitmapFactory.Options();
+            o.inJustDecodeBounds = true;
+
+            FileInputStream fis = new FileInputStream(f);
+            BitmapFactory.decodeStream(fis, null, o);
+            fis.close();
+
+            int scale = 1;
+            if (o.outHeight > IMAGE_MAX_SIZE || o.outWidth > IMAGE_MAX_SIZE) {
+                scale = (int) Math.pow(2, (int) Math.round(Math.log(IMAGE_MAX_SIZE / (double) Math.max(o.outHeight, o.outWidth)) / Math.log(0.5)));
+            }
+
+            //Decode with inSampleSize
+            BitmapFactory.Options o2 = new BitmapFactory.Options();
+            o2.inSampleSize = scale;
+            fis = new FileInputStream(f);
+            b = BitmapFactory.decodeStream(fis, null, o2);
+            fis.close();
+        } catch (FileNotFoundException e) {
+        }
+        return b;
     }
     
     /*
@@ -243,19 +279,24 @@ public class SlideShow extends Activity{
             	 
                   
                   // Always check for no. of photos remaining in the slide show...
-             	if(i<db.getnoOfPhotos(selectedAlbumName))
+             	if(i<noOfPhotos)
              	{
              		
              		if(flag == 0)
              		{
              			
-             		BitmapFactory.Options options = new BitmapFactory.Options();
-             		options.inSampleSize = 1;
-             		bm = BitmapFactory.decodeFile(photosInSelectedAlbum[i], options);
-             		if(bm!=null)		                
-             			jpgView.setImageBitmap(bm);
- 	                else
- 	                	jpgView.setImageResource(R.drawable.moved_photo);
+             		
+             		try {
+						bm = decodeFile(new File(photosInSelectedAlbum[i]));
+						if(bm!=null)		                
+	             			jpgView.setImageBitmap(bm);
+	 	                else
+	 	                	jpgView.setImageResource(R.drawable.moved_photo);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+             		
  	                
              		
              		
@@ -265,7 +306,7 @@ public class SlideShow extends Activity{
              		}
              		
              		
-             	}
+             	}  
              	else
              	{
              		i=0;
@@ -275,16 +316,17 @@ public class SlideShow extends Activity{
              		// music stops..
              		if (mMediaPlayer.isPlaying()) {
              	      	 mMediaPlayer.stop();
+             	      	mMediaPlayer.release();  
              	      }
              		
-             		mMediaPlayer.release();
+             		  
              		
              		db.close();
              		
              		System.gc();
-             		Intent i = new Intent(SlideShow.this, OpenAlbum.class);
-             		i.putExtra("aname_e", selectedAlbumName);
-     				startActivity(i);
+             		Intent i1 = new Intent(SlideShow.this, OpenAlbum.class);
+             		i1.putExtra("aname_e", selectedAlbumName);
+     				startActivity(i1);
      				System.out.println("Finish...");
     				finish();
                  }

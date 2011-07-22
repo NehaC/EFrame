@@ -52,7 +52,7 @@
 		/>  	  	
       	
       	<LinearLayout
-  	 	android:layout_below="@id/l1"
+  	 	android:layout_below="@id/album_name"
   		android:id="@+id/l2"
   		android:orientation="horizontal"
   		android:paddingTop="20px"
